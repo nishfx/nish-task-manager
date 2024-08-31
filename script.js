@@ -1,27 +1,33 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // DOM element references
-    const authContainer = document.getElementById('authContainer');
-    const appContainer = document.getElementById('appContainer');
-    const loginUsername = document.getElementById('loginUsername');
-    const loginPassword = document.getElementById('loginPassword');
-    const loginButton = document.getElementById('loginButton');
-    const registerUsername = document.getElementById('registerUsername');
-    const registerPassword = document.getElementById('registerPassword');
-    const registerButton = document.getElementById('registerButton');
-    const logoutButton = document.getElementById('logoutButton');
-    const projectForm = document.getElementById('projectForm');
-    const projectInput = document.getElementById('projectInput');
-    const projectSelect = document.getElementById('projectSelect');
-    const taskForm = document.getElementById('taskForm');
-    const taskInput = document.getElementById('taskInput');
-    const taskList = document.getElementById('taskList');
+// API configuration
+const API_URL = 'http://h2843541.stratoserver.net:5000/api';
 
-    let currentUser = null;
-    let projects = [];
-    let currentProject = null;
-    const API_URL = 'http://localhost:5000/api';
+// State management
+let currentUser = null;
+let projects = [];
+let currentProject = null;
 
-    async function login(username, password) {
+// DOM Elements
+const domElements = {
+    authContainer: document.getElementById('authContainer'),
+    appContainer: document.getElementById('appContainer'),
+    loginUsername: document.getElementById('loginUsername'),
+    loginPassword: document.getElementById('loginPassword'),
+    loginButton: document.getElementById('loginButton'),
+    registerUsername: document.getElementById('registerUsername'),
+    registerPassword: document.getElementById('registerPassword'),
+    registerButton: document.getElementById('registerButton'),
+    logoutButton: document.getElementById('logoutButton'),
+    projectForm: document.getElementById('projectForm'),
+    projectInput: document.getElementById('projectInput'),
+    projectSelect: document.getElementById('projectSelect'),
+    taskForm: document.getElementById('taskForm'),
+    taskInput: document.getElementById('taskInput'),
+    taskList: document.getElementById('taskList')
+};
+
+// Authentication module
+const auth = {
+    async login(username, password) {
         try {
             const response = await fetch(`${API_URL}/auth/login`, {
                 method: 'POST',
@@ -32,8 +38,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 localStorage.setItem('token', data.token);
                 currentUser = { username };
-                showApp();
-                loadProjects();
+                uiManager.showApp();
+                projectManager.loadProjects();
             } else {
                 alert(data.message);
             }
@@ -41,9 +47,8 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             alert('An error occurred. Please try again.');
         }
-    }
-
-    async function register(username, password) {
+    },
+    async register(username, password) {
         try {
             const response = await fetch(`${API_URL}/auth/register`, {
                 method: 'POST',
@@ -54,8 +59,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 localStorage.setItem('token', data.token);
                 currentUser = { username };
-                showApp();
-                loadProjects();
+                uiManager.showApp();
+                projectManager.loadProjects();
             } else {
                 alert(data.message);
             }
@@ -63,24 +68,51 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             alert('An error occurred. Please try again.');
         }
-    }
-
-    function logout() {
+    },
+    async verifyToken() {
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const response = await fetch(`${API_URL}/auth/verify`, {
+                    headers: { 'x-auth-token': token }
+                });
+                if (response.ok) {
+                    const userData = await response.json();
+                    currentUser = { username: userData.username };
+                    uiManager.showApp();
+                    projectManager.loadProjects();
+                } else {
+                    localStorage.removeItem('token');
+                    uiManager.showAuth();
+                }
+            } catch (error) {
+                console.error('Error verifying token:', error);
+                localStorage.removeItem('token');
+                uiManager.showAuth();
+            }
+        } else {
+            uiManager.showAuth();
+        }
+    },
+    logout() {
         localStorage.removeItem('token');
         currentUser = null;
         projects = [];
         currentProject = null;
-        showAuth();
+        uiManager.showAuth();
     }
+};
 
-    async function loadProjects() {
+// Project management module
+const projectManager = {
+    async loadProjects() {
         try {
             const response = await fetch(`${API_URL}/projects`, {
                 headers: { 'x-auth-token': localStorage.getItem('token') }
             });
             if (response.ok) {
                 projects = await response.json();
-                renderProjects();
+                this.renderProjects();
             } else {
                 throw new Error('Failed to load projects');
             }
@@ -88,9 +120,8 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             alert('Failed to load projects. Please try again.');
         }
-    }
-
-    async function createProject(name) {
+    },
+    async createProject(name) {
         try {
             const response = await fetch(`${API_URL}/projects`, {
                 method: 'POST',
@@ -103,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 const newProject = await response.json();
                 projects.push(newProject);
-                renderProjects();
+                this.renderProjects();
             } else {
                 throw new Error('Failed to create project');
             }
@@ -111,9 +142,22 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             alert('Failed to create project. Please try again.');
         }
+    },
+    renderProjects() {
+        const projectSelect = domElements.projectSelect;
+        projectSelect.innerHTML = '<option value="">Select a project</option>';
+        projects.forEach(project => {
+            const option = document.createElement('option');
+            option.value = project._id;
+            option.textContent = project.name;
+            projectSelect.appendChild(option);
+        });
     }
+};
 
-    async function loadTasks(projectId) {
+// Task management module
+const taskManager = {
+    async loadTasks(projectId) {
         try {
             const response = await fetch(`${API_URL}/tasks/${projectId}`, {
                 headers: { 'x-auth-token': localStorage.getItem('token') }
@@ -121,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 const tasks = await response.json();
                 currentProject.tasks = tasks;
-                renderTasks();
+                this.renderTasks();
             } else {
                 throw new Error('Failed to load tasks');
             }
@@ -129,9 +173,8 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             alert('Failed to load tasks. Please try again.');
         }
-    }
-
-    async function createTask(projectId, name) {
+    },
+    async createTask(projectId, name) {
         try {
             const response = await fetch(`${API_URL}/tasks/${projectId}`, {
                 method: 'POST',
@@ -144,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 const newTask = await response.json();
                 currentProject.tasks.push(newTask);
-                renderTasks();
+                this.renderTasks();
             } else {
                 throw new Error('Failed to create task');
             }
@@ -152,9 +195,8 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             alert('Failed to create task. Please try again.');
         }
-    }
-
-    async function updateTask(taskId, updates) {
+    },
+    async updateTask(taskId, updates) {
         try {
             const response = await fetch(`${API_URL}/tasks/${taskId}`, {
                 method: 'PUT',
@@ -169,7 +211,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const taskIndex = currentProject.tasks.findIndex(t => t._id === taskId);
                 if (taskIndex !== -1) {
                     currentProject.tasks[taskIndex] = updatedTask;
-                    renderTasks();
+                    this.renderTasks();
                 }
             } else {
                 throw new Error('Failed to update task');
@@ -178,108 +220,18 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
             alert('Failed to update task. Please try again.');
         }
-    }
-
-    // UI rendering functions (to be implemented)
-    function renderProjects() {
-        // Implementation for rendering projects
-    }
-
-    function renderTasks() {
-        // Implementation for rendering tasks
-    }
-
-    // Event listeners
-    loginButton.addEventListener('click', function() {
-        login(loginUsername.value, loginPassword.value);
-    });
-
-    registerButton.addEventListener('click', function() {
-        register(registerUsername.value, registerPassword.value);
-    });
-
-    logoutButton.addEventListener('click', logout);
-
-    projectForm.addEventListener('submit', function(event) {
-        event.preventDefault();
-        const projectName = projectInput.value.trim();
-        if (projectName) {
-            createProject(projectName);
-            projectInput.value = '';
-        }
-    });
-
-    projectSelect.addEventListener('change', function() {
-        const projectId = this.value;
-        currentProject = projects.find(p => p._id === projectId) || null;
-        if (currentProject) {
-            loadTasks(currentProject._id);
-        } else {
-            renderTasks();
-        }
-    });
-
-    taskForm.addEventListener('submit', function(event) {
-        event.preventDefault();
-        if (currentProject) {
-            const taskName = taskInput.value.trim();
-            if (taskName) {
-                createTask(currentProject._id, taskName);
-                taskInput.value = '';
-            }
-        } else {
-            alert('Please select a project first.');
-        }
-    });
-
-    // Check if user is already logged in
-    const token = localStorage.getItem('token');
-    if (token) {
-        // Verify the token and load user data
-        verifyTokenAndLoadUser(token);
-    } else {
-        showAuth();
-    }
-
-    async function verifyTokenAndLoadUser(token) {
-        try {
-            const response = await fetch(`${API_URL}/auth/verify`, {
-                headers: { 'x-auth-token': token }
+    },
+    renderTasks() {
+        const taskList = domElements.taskList;
+        taskList.innerHTML = '';
+        if (currentProject && currentProject.tasks) {
+            currentProject.tasks.forEach(task => {
+                const taskElement = this.createTaskElement(task);
+                taskList.appendChild(taskElement);
             });
-            if (response.ok) {
-                const userData = await response.json();
-                currentUser = { username: userData.username };
-                showApp();
-                loadProjects();
-            } else {
-                // Token is invalid or expired
-                localStorage.removeItem('token');
-                showAuth();
-            }
-        } catch (error) {
-            console.error('Error verifying token:', error);
-            localStorage.removeItem('token');
-            showAuth();
         }
-    }
-
-    function showAuth() {
-        authContainer.style.display = 'block';
-        appContainer.style.display = 'none';
-    }
-
-    function showApp() {
-        authContainer.style.display = 'none';
-        appContainer.style.display = 'block';
-    }
-
-    // Add this function to handle task updates (completion, subtasks, etc.)
-    function handleTaskUpdate(taskId, updates) {
-        updateTask(taskId, updates);
-    }
-
-    // Update the createTaskElement function to use the new handleTaskUpdate function
-    function createTaskElement(task) {
+    },
+    createTaskElement(task) {
         const taskItem = document.createElement('li');
         taskItem.className = 'task-item';
         if (task.completed) taskItem.classList.add('completed');
@@ -293,23 +245,23 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const completeButton = document.createElement('button');
         completeButton.textContent = task.completed ? 'Uncomplete' : 'Complete';
-        completeButton.addEventListener('click', function() {
-            handleTaskUpdate(task._id, { completed: !task.completed });
+        completeButton.addEventListener('click', () => {
+            this.handleTaskUpdate(task._id, { completed: !task.completed });
         });
 
         const subtaskList = document.createElement('ul');
         subtaskList.className = 'subtask-list';
 
         task.subtasks.forEach(subtask => {
-            const subtaskItem = createSubtaskElement(task._id, subtask);
+            const subtaskItem = this.createSubtaskElement(task._id, subtask);
             subtaskList.appendChild(subtaskItem);
         });
 
         const addSubtaskButton = document.createElement('button');
         addSubtaskButton.className = 'add-subtask';
         addSubtaskButton.textContent = 'Add Subtask';
-        addSubtaskButton.addEventListener('click', function() {
-            addSubtask(task._id, subtaskList);
+        addSubtaskButton.addEventListener('click', () => {
+            this.addSubtask(task._id, subtaskList);
         });
 
         taskHeader.appendChild(taskTitle);
@@ -319,9 +271,8 @@ document.addEventListener('DOMContentLoaded', function() {
         taskItem.appendChild(addSubtaskButton);
 
         return taskItem;
-    }
-
-    function createSubtaskElement(taskId, subtask) {
+    },
+    createSubtaskElement(taskId, subtask) {
         const subtaskItem = document.createElement('li');
         subtaskItem.className = 'subtask-item';
         
@@ -329,11 +280,11 @@ document.addEventListener('DOMContentLoaded', function() {
         checkbox.type = 'checkbox';
         checkbox.className = 'subtask-checkbox';
         checkbox.checked = subtask.completed;
-        checkbox.addEventListener('change', function() {
+        checkbox.addEventListener('change', () => {
             const updatedSubtasks = currentProject.tasks
                 .find(t => t._id === taskId).subtasks
-                .map(st => st._id === subtask._id ? {...st, completed: this.checked} : st);
-            handleTaskUpdate(taskId, { subtasks: updatedSubtasks });
+                .map(st => st._id === subtask._id ? {...st, completed: checkbox.checked} : st);
+            this.handleTaskUpdate(taskId, { subtasks: updatedSubtasks });
         });
         
         const subtaskText = document.createElement('span');
@@ -343,9 +294,8 @@ document.addEventListener('DOMContentLoaded', function() {
         subtaskItem.appendChild(subtaskText);
         
         return subtaskItem;
-    }
-
-    function addSubtask(taskId, subtaskList) {
+    },
+    addSubtask(taskId, subtaskList) {
         const subtaskItem = document.createElement('li');
         subtaskItem.className = 'subtask-item';
         
@@ -356,17 +306,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const subtaskInput = document.createElement('input');
         subtaskInput.type = 'text';
         subtaskInput.placeholder = 'Enter subtask';
-        subtaskInput.addEventListener('blur', function() {
-            if (this.value.trim() !== '') {
+        subtaskInput.addEventListener('blur', () => {
+            if (subtaskInput.value.trim() !== '') {
                 const newSubtask = {
-                    name: this.value.trim(),
+                    name: subtaskInput.value.trim(),
                     completed: false
                 };
                 const task = currentProject.tasks.find(t => t._id === taskId);
                 const updatedSubtasks = [...task.subtasks, newSubtask];
-                handleTaskUpdate(taskId, { subtasks: updatedSubtasks });
+                this.handleTaskUpdate(taskId, { subtasks: updatedSubtasks });
                 subtaskList.removeChild(subtaskItem);
-                subtaskList.appendChild(createSubtaskElement(taskId, newSubtask));
+                subtaskList.appendChild(this.createSubtaskElement(taskId, newSubtask));
             } else {
                 subtaskList.removeChild(subtaskItem);
             }
@@ -376,5 +326,74 @@ document.addEventListener('DOMContentLoaded', function() {
         subtaskItem.appendChild(subtaskInput);
         subtaskList.appendChild(subtaskItem);
         subtaskInput.focus();
+    },
+    handleTaskUpdate(taskId, updates) {
+        this.updateTask(taskId, updates);
     }
-});
+};
+
+// UI management module
+const uiManager = {
+    showAuth() {
+        domElements.authContainer.style.display = 'block';
+        domElements.appContainer.style.display = 'none';
+    },
+    showApp() {
+        domElements.authContainer.style.display = 'none';
+        domElements.appContainer.style.display = 'block';
+    }
+};
+
+// Event listeners
+function setupEventListeners() {
+    domElements.loginButton.addEventListener('click', () => {
+        auth.login(domElements.loginUsername.value, domElements.loginPassword.value);
+    });
+
+    domElements.registerButton.addEventListener('click', () => {
+        auth.register(domElements.registerUsername.value, domElements.registerPassword.value);
+    });
+
+    domElements.logoutButton.addEventListener('click', auth.logout);
+
+    domElements.projectForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const projectName = domElements.projectInput.value.trim();
+        if (projectName) {
+            projectManager.createProject(projectName);
+            domElements.projectInput.value = '';
+        }
+    });
+
+    domElements.projectSelect.addEventListener('change', function() {
+        const projectId = this.value;
+        currentProject = projects.find(p => p._id === projectId) || null;
+        if (currentProject) {
+            taskManager.loadTasks(currentProject._id);
+        } else {
+            taskManager.renderTasks();
+        }
+    });
+
+    domElements.taskForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (currentProject) {
+            const taskName = domElements.taskInput.value.trim();
+            if (taskName) {
+                taskManager.createTask(currentProject._id, taskName);
+                domElements.taskInput.value = '';
+            }
+        } else {
+            alert('Please select a project first.');
+        }
+    });
+}
+
+// Initialization
+function init() {
+    setupEventListeners();
+    auth.verifyToken();
+}
+
+// Start the application when the DOM is loaded
+document.addEventListener('DOMContentLoaded', init);

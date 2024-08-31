@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Task Management Tool</title>
+    <title>Task Management Tool</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <h1>Advanced Task Management Tool</h1>
+        <h1>Task Management Tool</h1>
+        
         <div id="authContainer">
             <div id="loginForm">
                 <h2>Login</h2>
@@ -16,6 +17,7 @@
                 <input type="password" id="loginPassword" placeholder="Password" required>
                 <button id="loginButton">Login</button>
             </div>
+
             <div id="registerForm">
                 <h2>Register</h2>
                 <input type="text" id="registerUsername" placeholder="Username" required>
@@ -23,20 +25,25 @@
                 <button id="registerButton">Register</button>
             </div>
         </div>
+
         <div id="appContainer" style="display: none;">
             <button id="logoutButton">Logout</button>
+
             <div id="projectManager">
+                <h2>Projects</h2>
                 <form id="projectForm">
-                    <input type="text" id="projectInput" placeholder="Enter a new project" required>
+                    <input type="text" id="projectInput" placeholder="New Project Name" required>
                     <button type="submit">Add Project</button>
                 </form>
                 <select id="projectSelect">
                     <option value="">Select a project</option>
                 </select>
             </div>
+
             <div id="taskManager">
+                <h2>Tasks</h2>
                 <form id="taskForm">
-                    <input type="text" id="taskInput" placeholder="Enter a new task" required>
+                    <input type="text" id="taskInput" placeholder="New Task" required>
                     <button type="submit">Add Task</button>
                 </form>
                 <ul id="taskList"></ul>
