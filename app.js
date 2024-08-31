@@ -1,7 +1,4 @@
 import auth from './auth.js';
-import setupEventListeners from './eventListeners.js';
-import { AppProvider } from './AppContext.js';
-import ErrorBoundary from './ErrorBoundary.js';
 import uiManager from './uiManager.js';
 import projectManager from './projectManager.js';
 import taskManager from './taskManager.js';
@@ -11,59 +8,6 @@ function init() {
     auth.verifyToken();
 }
 
-function App() {
-    return (
-        <AppProvider>
-            <ErrorBoundary>
-                <div id="app">
-                    <div id="authContainer">
-                        <div id="loginForm">
-                            <h2>Login</h2>
-                            <input type="text" id="loginUsername" placeholder="Username" />
-                            <input type="password" id="loginPassword" placeholder="Password" />
-                            <button id="loginButton">Login</button>
-                        </div>
-                        <div id="registerForm">
-                            <h2>Register</h2>
-                            <input type="text" id="registerUsername" placeholder="Username" />
-                            <input type="password" id="registerPassword" placeholder="Password" />
-                            <button id="registerButton">Register</button>
-                        </div>
-                    </div>
-                    <div id="appContainer" style="display: none;">
-                        <button id="logoutButton">Logout</button>
-                        <div id="projectManager">
-                            <h2>Projects</h2>
-                            <form id="projectForm">
-                                <input type="text" id="projectInput" placeholder="New Project Name" />
-                                <button type="submit">Add Project</button>
-                            </form>
-                            <select id="projectSelect">
-                                <option value="">Select a project</option>
-                            </select>
-                        </div>
-                        <div id="taskManager">
-                            <h2>Tasks</h2>
-                            <form id="taskForm">
-                                <input type="text" id="taskInput" placeholder="New Task" />
-                                <button type="submit">Add Task</button>
-                            </form>
-                            <ul id="taskList"></ul>
-                        </div>
-                    </div>
-                </div>
-            </ErrorBoundary>
-        </AppProvider>
-    );
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const root = document.getElementById('root');
-    root.appendChild(App());
-    init();
-});
-
-// Event Listeners
 function setupEventListeners() {
     document.getElementById('loginButton').addEventListener('click', () => {
         const username = document.getElementById('loginUsername').value;
@@ -112,4 +56,6 @@ function setupEventListeners() {
     });
 }
 
-export default App;
+document.addEventListener('DOMContentLoaded', init);
+
+export { init };
