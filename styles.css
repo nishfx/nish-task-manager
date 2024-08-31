@@ -1,0 +1,174 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+}
+
+#taskForm {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+#taskInput {
+    flex-grow: 1;
+    padding: 10px;
+    font-size: 16px;
+}
+
+button {
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#taskList {
+    list-style-type: none;
+    padding: 0;
+}
+
+.task-item {
+    background-color: #fff;
+    margin-bottom: 10px;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.task-item.completed {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+.task-item {
+    background-color: #fff;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.task-title {
+    font-weight: bold;
+}
+
+.subtask-list {
+    margin-left: 20px;
+}
+
+.subtask-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.subtask-checkbox {
+    margin-right: 10px;
+}
+
+.add-subtask {
+    margin-top: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.add-subtask:hover {
+    background-color: #45a049;
+}
+
+#projectManager {
+    margin-bottom: 20px;
+}
+
+#projectForm {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+#projectInput {
+    flex-grow: 1;
+    padding: 10px;
+    font-size: 16px;
+}
+
+#projectSelect {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.project-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+#authContainer {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+#loginForm, #registerForm {
+    background-color: #f4f4f4;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+#loginForm h2, #registerForm h2 {
+    margin-top: 0;
+}
+
+#loginForm input, #registerForm input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+#loginButton, #registerButton, #logoutButton {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#loginButton:hover, #registerButton:hover, #logoutButton:hover {
+    background-color: #45a049;
+}
+
+#logoutButton {
+    margin-bottom: 20px;
+}
