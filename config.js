@@ -1,0 +1,1 @@
+export const API_URL = 'http://h2843541.stratoserver.net:5000/api';
